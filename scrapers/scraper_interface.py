@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-import re
-import requests
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
 
 
 class Scraper(ABC):
@@ -15,11 +17,11 @@ class Scraper(ABC):
     """
 
     def __init__(self, url):
-        self.session = self.create_session()
+        self.session = None
         self.url = url
 
     @abstractmethod
-    def create_session(self):
+    def create_driver(self):
         pass
 
     @abstractmethod
@@ -31,23 +33,48 @@ class Scraper(ABC):
         """Retrieve an element by a given selector and method."""
         pass
 
+    @abstractmethod
+    def close_driver(self):
+        """Closes the WebDriver properly."""
+        pass
+
 
 class SeleniumScraper(Scraper):
     """
     Scraper for dynamic websites using Selenium library.
     """
-
-    def __init__(self, url: str):
+    def __init__(self, url: str, driver=None):
         super().__init__(url)
+        if driver:
+            self.driver = driver
+        else:
+            self.driver = self.create_driver()
 
-    def create_session(self):
+    def create_driver(self):
         options = webdriver.ChromeOptions()
-        options.add_argument("--headless")  # Run in headless mode
-        return webdriver.Chrome(options=options)
+        # options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--remote-debugging-port=9222")
+
+        service = Service(ChromeDriverManager().install())
+        try:
+            driver = webdriver.Chrome(service=service, options=options)
+            return driver
+        except Exception as e:
+            print(f"Failed to start WebDriver: {e}")
+            raise
 
     def get_title(self):
-        self.session.get(self.url)
-        return self.session.title
+        self.driver.get(self.url)
+        try:
+            WebDriverWait(self.driver, 5).until(ec.presence_of_element_located((By.TAG_NAME, "h1")))
+            return self.driver.title
+
+        except Exception as e:
+            print(f"Error while waiting for title: {e}")
+            return "No title found"
 
     def get_element(self, by, value):
         by_mapping = {
@@ -57,40 +84,9 @@ class SeleniumScraper(Scraper):
             "css": By.CSS_SELECTOR,
             "xpath": By.XPATH,
         }
-        return self.session.find_element(by_mapping[by], value)
+        return self.driver.find_element(by_mapping[by], value)
 
-
-class RequestsScraper(Scraper):
-    """
-    Scraper for static websites using the requests library without BeautifulSoup.
-    """
-
-    def __init__(self, url: str):
-        super().__init__(url)
-        self.url = url
-
-    def create_session(self):
-        return requests.Session()
-
-    def get_title(self):
-        response = self.session.get(self.url)
-        response.raise_for_status()
-        match = re.search(r"<title>(.*?)</title>", response.text, re.IGNORECASE)
-
-        return match.group(1) if match else "No title found"
-
-    def get_element(self, by: str, value: str):
-        response = self.session.get(self.url)
-        response.raise_for_status()
-
-        if by == "id":
-            pattern = rf'id="{value}"[^>]*>(.*?)</'
-        elif by == "class":
-            pattern = rf'class="{value}"[^>]*>(.*?)</'
-        elif by == "tag":
-            pattern = rf'<{value}[^>]*>(.*?)</{value}>'
-        else:
-            raise ValueError("Unsupported selector method.")
-
-        match = re.search(pattern, response.text, re.IGNORECASE | re.DOTALL)
-        return match.group(1).strip() if match else "Element not found"
+    def close_driver(self):
+        """Closes the WebDriver properly."""
+        if self.driver:
+            self.driver.quit()
