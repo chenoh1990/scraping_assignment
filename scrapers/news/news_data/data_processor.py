@@ -1,9 +1,15 @@
-from data.data_fetcher import DataFetcher
-from data.data_saver import DataSaver
+from scrapers.news.news_data.data_fetcher import DataFetcher
+from scrapers.news.news_data.data_saver import DataSaver
 import re
 
 
 class DataProcessor:
+    """
+    DataProcessor class manages the entire workflow of fetching, processing, and saving news data.
+
+    this class uses DataFetcher to fetch articles from the API,
+    and uses DataSaver to saves data in chunks to optimize performance.
+    """
     def __init__(self, data_fetcher: DataFetcher, data_saver: DataSaver):
         self.data_fetcher = data_fetcher
         self.data_saver = data_saver
@@ -12,8 +18,9 @@ class DataProcessor:
         try:
             # get first page articles.
             response_data = self.data_fetcher.fetch_articles(
-                api_url="https://www.gov.il/CollectorsWebApi/api/DataCollector/GetResults?CollectorType=news&&culture=en")
-
+                api_url="https://www.gov.il/CollectorsWebApi/api/DataCollector/GetResults?CollectorType=news&&culture"
+                        "=en")
+            # save first page articles.
             if response_data:
                 self.data_saver.save_data_in_chunks(response_data.get("results"))
 
@@ -21,10 +28,11 @@ class DataProcessor:
             base_url = "https://www.gov.il/CollectorsWebApi/api/DataCollector/GetResults?CollectorType=news"
 
             # get all articles from paginated pages.
-            remaining_articles = self.data_fetcher.fetch_paginated_articles(base_url, response_data.get('total'))
+            paginated_articles = self.data_fetcher.fetch_paginated_articles(base_url, response_data.get('total'))
 
-            if remaining_articles:
-                self.data_saver.save_data_in_chunks(remaining_articles.get("results"), chunk_size=50)
+            # save the remaining articles in chunks of 50.
+            if paginated_articles:
+                self.data_saver.save_data_in_chunks(paginated_articles.get("results"), chunk_size=50)
 
         except Exception as ex:
             print(f"Error processing news data: {ex}")

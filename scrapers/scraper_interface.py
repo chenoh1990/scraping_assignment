@@ -38,11 +38,17 @@ class Scraper(ABC):
         """Closes the WebDriver properly."""
         pass
 
+    @abstractmethod
+    def fetch_data(self):
+        """fetch paneco_data from site"""
+        pass
+
 
 class SeleniumScraper(Scraper):
     """
     Scraper for dynamic websites using Selenium library.
     """
+
     def __init__(self, url: str, driver=None):
         super().__init__(url)
         if driver:
@@ -57,11 +63,13 @@ class SeleniumScraper(Scraper):
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
         options.add_argument("--remote-debugging-port=9222")
+        options.add_argument("--start-maximized")
 
         service = Service(ChromeDriverManager().install())
         try:
             driver = webdriver.Chrome(service=service, options=options)
             return driver
+
         except Exception as e:
             print(f"Failed to start WebDriver: {e}")
             raise
@@ -86,7 +94,51 @@ class SeleniumScraper(Scraper):
         }
         return self.driver.find_element(by_mapping[by], value)
 
+    def get_elements(self, by, value):
+
+        by_mapping = {
+            "id": By.ID,
+            "class": By.CLASS_NAME,
+            "tag": By.TAG_NAME,
+            "css": By.CSS_SELECTOR,
+            "xpath": By.XPATH,
+        }
+        try:
+            return self.driver.find_elements(by_mapping[by], value)
+
+        except Exception as e:
+            print(f"failed to get elements, error:{e}")
+            return []
+
     def close_driver(self):
         """Closes the WebDriver properly."""
         if self.driver:
             self.driver.quit()
+
+    def handle_popup_message(self, by_type, popup_selector="#dy-over-18yrs-popup"):
+        """
+        Handles the popup if it appears on the site.
+        :param by_type:
+        :param popup_selector: CSS selector for the popup element.
+        """
+        # TODO: add retry decorator?
+        try:
+            element = self.get_element(by_type, popup_selector)
+            element.click()
+            print("Popup closed successfully.")
+
+        except Exception as ex:
+            print(f"No popup found or already closed, error: {ex}")
+
+    def fetch_data(self):
+        pass
+
+    def scrape_site(self, url: str):
+        # get url.
+        self.driver.get(url)
+
+        #
+        self.fetch_data()
+
+        # close browser.
+        self.driver.quit()

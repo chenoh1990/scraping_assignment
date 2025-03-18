@@ -1,12 +1,12 @@
-from .scraper_interface import SeleniumScraper
-from data.data_fetcher import DataFetcher
-from data.data_saver import DataSaver
-from data.data_processor import DataProcessor
+from scrapers.scraper_interface import SeleniumScraper
+from scrapers.news.news_data.data_fetcher import DataFetcher
+from scrapers.news.news_data.data_saver import DataSaver
+from scrapers.news.news_data.data_processor import DataProcessor
 
 
 class NewsSiteScraper(SeleniumScraper):
     """
-    NewsSiteScraper uses Selenium to scrape data from a news website.
+    NewsSiteScraper uses Selenium to scrape news_data from a news website.
     """
     def __init__(self, url: str):
         super().__init__(url)
@@ -22,15 +22,8 @@ class NewsSiteScraper(SeleniumScraper):
     def get_element(self, by: str, value: str):
         return super().get_element(by, value)
 
-    def scrape_site(self, url: str):
-        # get url.
-        self.driver.get(url)
-
-        # get title
-        page_title = self.get_title()
-        print(f"Page Title: {page_title}")
-
-        # processing the relevant data using DataProcessor class.
+    def fetch_data(self):
+        # processing the relevant news_data using DataProcessor class.
         self.data_processor.process_news_data()
 
-        self.driver.quit()
+

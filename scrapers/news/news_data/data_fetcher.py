@@ -4,7 +4,7 @@ import concurrent.futures
 
 class DataFetcher:
     """
-       DataFetcher is responsible for fetching data from APIs.
+       DataFetcher is responsible for fetching news_data from APIs.
     """
 
     @staticmethod
@@ -42,11 +42,11 @@ class DataFetcher:
     @staticmethod
     def fetch_articles(api_url: str, headers: dict = None):
         """
-        Fetch data from the given API URL with optional headers.
+        Fetch news_data from the given API URL with optional headers.
 
         :param api_url: The URL of the API endpoint.
         :param headers: Optional headers to include in the request.
-        :return: JSON data if the request is successful, None otherwise.
+        :return: JSON news_data if the request is successful, None otherwise.
         """
 
         try:
@@ -54,7 +54,7 @@ class DataFetcher:
             response = requests.get(api_url, headers=headers)
 
             # Check if the response status code is 200
-            # if status code is 200 -> extract the article data from response.
+            # if status code is 200 -> extract the article news_data from response.
             if response.status_code == 200:
                 return response.json()
             else:
@@ -75,7 +75,7 @@ class DataFetcher:
         api_url = f"https://www.gov.il/ContentPageWebApi/api/content-pages/{article_name}?culture=en"
 
         try:
-            # Fetch the content data using the API
+            # Fetch the content news_data using the API
             response = requests.get(api_url)
             if response.status_code == 200:
                 return response.json()

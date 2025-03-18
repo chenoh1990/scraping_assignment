@@ -1,8 +1,8 @@
 import json
 import os
 import pytest
-from data.data_saver import DataSaver
-from unittest.mock import patch, Mock
+from scrapers.news.news_data.data_saver import DataSaver
+from unittest.mock import patch
 
 
 @pytest.fixture
@@ -23,13 +23,13 @@ def data_saver(temp_json_file):
 
 
 def test_load_existing_data_empty_file(data_saver, temp_json_file):
-    """Test loading data from an empty file."""
+    """Test loading news_data from an empty file."""
     data = data_saver.load_existing_data()
     assert data == []
 
 
 def test_load_existing_data_existing_data(data_saver, temp_json_file):
-    """Test loading data from a file with existing data."""
+    """Test loading news_data from a file with existing news_data."""
     with open(temp_json_file, 'w', encoding='utf-8') as f:
         json.dump([{"title": "Existing Article"}], f)
 
@@ -39,7 +39,7 @@ def test_load_existing_data_existing_data(data_saver, temp_json_file):
 
 
 def test_extract_section_data():
-    """Test extracting section data from article content."""
+    """Test extracting section news_data from article content."""
     article_content = {
         "contentMain": {
             "htmlContents": [
@@ -47,12 +47,12 @@ def test_extract_section_data():
             ]
         }
     }
-    with patch('data.data_saver.remove_html_tags', return_value="Test content"):
+    with patch('scrapers.news.news_data.data_saver.remove_html_tags', return_value="Test content"):
         assert DataSaver.extract_section_data(article_content) == "Test content"
 
 
 def test_extract_tags():
-    """Test extracting tags from article data."""
+    """Test extracting tags from article news_data."""
     tags = {
         "metaData": {
             "category": [{"title": "Tech"}, {"title": "News"}],
@@ -80,9 +80,11 @@ def test_get_json_format_response(data_saver, temp_json_file):
         },
         "description": "Test description"
     }
-    with patch('data.data_fetcher.DataFetcher.fetch_article_content') as mock_fetch:
+    with patch('scrapers.news.news_data.data_fetcher.DataFetcher.fetch_article_content') as mock_fetch:
         mock_fetch.return_value = {"contentMain": {"htmlContents": [{"sectionData": "<p>Content</p>"}]}}
-        with patch('data.data_saver.remove_html_tags', return_value="Content"):
+
+        with patch('scrapers.news.news_data.data_saver.remove_html_tags', return_value="Content"):
             article = data_saver.get_json_format_response(item)
+
             assert article["title"] == "Test Article"
             assert article["article_content"] == "Content"
