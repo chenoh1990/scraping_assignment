@@ -1,7 +1,6 @@
-import pytest
 import requests
 from unittest.mock import patch, Mock
-from data.data_fetcher import DataFetcher
+from scrapers.news.news_data.data_fetcher import DataFetcher
 
 
 def test_fetch_articles_success():

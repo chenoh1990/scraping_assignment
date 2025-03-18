@@ -1,8 +1,6 @@
 import json
 from .data_fetcher import DataFetcher
 from utils import remove_html_tags
-from typing import List, Union
-from models.article import Article
 
 
 class DataSaver:
@@ -12,7 +10,7 @@ class DataSaver:
     @staticmethod
     def extract_tags(tags):
         """
-        extracting tags data from article.
+        extracting tags news_data from article.
         :param tags: a Dict of dictionaries.
 
         :return: organized dictionary for easy storage in a Json file.
@@ -45,7 +43,7 @@ class DataSaver:
             return None
 
     def load_existing_data(self):
-        """Loads existing data from the JSON file."""
+        """Loads existing news_data from the JSON file."""
         try:
             with open(self.file_name, 'r', encoding='utf-8') as f:
                 return json.load(f)
@@ -75,11 +73,11 @@ class DataSaver:
     def load_articles_from_file(self):
         """
         function checks if file already exist.
-        if the file exist -> return list of all file data.
+        if the file exist -> return list of all file news_data.
         if file not exist -> return empty list.
         """
         try:
-            # Try to open the existing file to append data.
+            # Try to open the existing file to append news_data.
             with open(self.file_name, 'r', encoding='utf-8') as f:
                 return json.load(f)
 
@@ -120,7 +118,7 @@ class DataSaver:
         # create a list of existing URLs to prevent duplicates.
         existing_urls = [article['url'] for article in articles]
 
-        # Save data in chunks to improve performance
+        # Save news_data in chunks to improve performance
         for i in range(0, len(data), chunk_size):
             chunk = data[i:i + chunk_size]
 
@@ -136,9 +134,10 @@ class DataSaver:
 
                     except ValueError as ex:
                         print(f"Value error: {ex}")
+
                     except Exception as e:
                         print(f"Error processing article {item.get('url')}: {e}")
 
-            # Saving data to JSON file in chunks.
+            # Saving news_data to JSON file in chunks.
             with open(self.file_name, 'w', encoding='utf-8') as f:
                 json.dump(articles, f, ensure_ascii=False, indent=4)
