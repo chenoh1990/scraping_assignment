@@ -1,15 +1,18 @@
-from scrapers.news.gov_news_scraper import NewsSiteScraper
-from scrapers.paneco.paneco_whiskey_scraper import PanecoWhiskeyScraper
+from factories.scraper_factory import ScraperFactory
 
 if __name__ == '__main__':
 
-    # url = "https://www.gov.il/en/collectors/news"
-    #
-    # scraper = NewsSiteScraper(url)
-    # # scraper.create_driver()
-    # scraper.scrape_site(url)
+    """ please select the appropriate scraper by removing the relevant variables from the comment. """
 
-    url = "https://www.paneco.co.il/whiskey"
+    url = "https://www.gov.il/en/collectors/news"
+    scraper_type = "news"
 
-    scraper = PanecoWhiskeyScraper(url)
-    scraper.scrape_site(url)
+    # url = "https://www.paneco.co.il/whiskey"
+    # scraper_type = "paneco"
+
+    try:
+        scraper = ScraperFactory.create_scraper(scraper_type, url)
+        scraper.scrape_site(url)
+
+    except Exception as ex:
+        print(f"failed to initialize the scraper. error: {ex}")
