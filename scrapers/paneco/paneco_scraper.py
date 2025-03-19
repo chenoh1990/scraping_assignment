@@ -1,11 +1,20 @@
 from scrapers.scraper_interface import SeleniumScraper
 from abc import ABC, abstractmethod
+from logger.scraper_logger import Logger
 
 
 class PanecoScraper(SeleniumScraper, ABC):
+    """
+       Abstract Scraper for Paneco website.
+       this department provides a structure for building a scraper for each product department
+        in the paneco store.
+    """
+    LOG_NAME = "PanecoScraper"
+    LOG_FILE = "logs/paneco_scraper.log"
 
     def __init__(self, url: str):
         super().__init__(url)
+        self.logger = Logger.get_logger(self.LOG_NAME, self.LOG_FILE)
 
     @abstractmethod
     def get_product_name(self):

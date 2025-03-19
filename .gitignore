@@ -1,3 +1,5 @@
 .idea/
 __pycache__/
 articles.json
+logs/
+tests/logs/

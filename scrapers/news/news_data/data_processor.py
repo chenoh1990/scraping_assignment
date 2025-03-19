@@ -10,9 +10,10 @@ class DataProcessor:
     this class uses DataFetcher to fetch articles from the API,
     and uses DataSaver to saves data in chunks to optimize performance.
     """
-    def __init__(self, data_fetcher: DataFetcher, data_saver: DataSaver):
+    def __init__(self, data_fetcher: DataFetcher, data_saver: DataSaver, logger):
         self.data_fetcher = data_fetcher
         self.data_saver = data_saver
+        self.logger = logger
 
     def process_news_data(self):
         try:
@@ -23,6 +24,7 @@ class DataProcessor:
             # save first page articles.
             if response_data:
                 self.data_saver.save_data_in_chunks(response_data.get("results"))
+                self.logger.info("articles in first page have been successfully saved.")
 
             # get all pages articles
             base_url = "https://www.gov.il/CollectorsWebApi/api/DataCollector/GetResults?CollectorType=news"
