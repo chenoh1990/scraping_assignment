@@ -4,8 +4,9 @@ from utils import remove_html_tags
 
 
 class DataSaver:
-    def __init__(self, file_name):
+    def __init__(self, file_name, logger):
         self.file_name = file_name
+        self.logger = logger
 
     @staticmethod
     def extract_tags(tags):
@@ -15,7 +16,6 @@ class DataSaver:
 
         :return: organized dictionary for easy storage in a Json file.
         """
-
         tag_data = {}
         if 'metaData' in tags:
             for tag_name, tag_list in tags['metaData'].items():
@@ -27,19 +27,19 @@ class DataSaver:
 
         return tag_data
 
-    @staticmethod
-    def extract_section_data(article_content):
+    def extract_section_data(self, article_content):
         """
         Extract the 'sectionData' from the article content.
         """
         try:
             section_data = article_content.get("contentMain", {}).get('htmlContents', [])[0].get('sectionData', None)
+
             # clean all HTML tags from content,
             clean_section_data = remove_html_tags(section_data)
             return clean_section_data
 
         except (IndexError, AttributeError) as e:
-            print(f"Error extracting content from response: {e}")
+            self.logger.warning(f"Error extracting content from response: {e}")
             return None
 
     def load_existing_data(self):
@@ -47,17 +47,20 @@ class DataSaver:
         try:
             with open(self.file_name, 'r', encoding='utf-8') as f:
                 return json.load(f)
+
         except FileNotFoundError:
             # If file doesn't exist, return an empty list
+            self.logger.warning("file not exist, returns empty list.")
             return []
 
     def get_json_format_response(self, item: dict):
         article_response = DataFetcher.fetch_article_content(item.get("url"))
 
         if article_response is None:
+            self.logger.error(f"No content in: {item.get('url')}")
             raise ValueError(f"No content returned for {item.get('url')}")
 
-        article_content = DataSaver.extract_section_data(article_response)
+        article_content = DataSaver.extract_section_data(self, article_content=article_response)
 
         article = {
             'title': item['title'],
@@ -133,11 +136,12 @@ class DataSaver:
                         existing_urls.append(item['url'])
 
                     except ValueError as ex:
-                        print(f"Value error: {ex}")
+                        self.logger.error(f"Value error: {ex}")
 
                     except Exception as e:
-                        print(f"Error processing article {item.get('url')}: {e}")
+                        self.logger.error(f"Error processing article {item.get('url')}: {e}")
 
             # Saving news_data to JSON file in chunks.
             with open(self.file_name, 'w', encoding='utf-8') as f:
                 json.dump(articles, f, ensure_ascii=False, indent=4)
+                self.logger.info("news_data chunk saved successfully in json file.")

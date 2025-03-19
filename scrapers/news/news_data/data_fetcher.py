@@ -6,11 +6,14 @@ class DataFetcher:
     """
        DataFetcher is responsible for fetching news_data from APIs.
     """
+    def __init__(self, logger):
+        self.logger = logger
 
     @staticmethod
     def fetch_paginated_articles(base_url, total_articles, interval=10):
         """
         Fetch all articles from paginated API responses.
+
         :param total_articles:
         :param base_url: The base API URL for fetching articles.
         :param interval: The number of articles per request.

@@ -9,9 +9,11 @@ class PanecoDataProcessor:
     The class uses PanecoDataFetcher to fetch product data from the Paneco website,
     and uses PanecoDataSaver to save the processed data.
     """
-    def __init__(self, paneco_data_fetcher: PanecoDataFetcher, paneco_data_saver: PanecoDataSaver):
+
+    def __init__(self, paneco_data_fetcher: PanecoDataFetcher, paneco_data_saver: PanecoDataSaver, logger):
         self.paneco_data_fetcher = paneco_data_fetcher
         self.paneco_data_saver = paneco_data_saver
+        self.logger = logger
 
     def process_data(self):
         """
@@ -20,6 +22,7 @@ class PanecoDataProcessor:
 
         ensures all products are saved, including any remaining ones at the end.
         """
+
         # get list of all bottles in paneco store section.
         products = self.paneco_data_fetcher.fetch_data()
 
@@ -35,4 +38,6 @@ class PanecoDataProcessor:
 
         # saving all unsaved products if the total of all products is not divisible by 10.
         self.paneco_data_saver.save_data(products)
+        self.logger.info("all products successfully save in json file.")
+
         return products

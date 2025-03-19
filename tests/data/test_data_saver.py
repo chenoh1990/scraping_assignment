@@ -3,6 +3,7 @@ import os
 import pytest
 from scrapers.news.news_data.data_saver import DataSaver
 from unittest.mock import patch
+from logger.scraper_logger import Logger
 
 
 @pytest.fixture
@@ -19,7 +20,8 @@ def temp_json_file():
 @pytest.fixture
 def data_saver(temp_json_file):
     """Fixture to create a DataSaver instance for testing."""
-    return DataSaver(temp_json_file)
+    logger = Logger.get_logger("test_logger", "logs/test.log")
+    return DataSaver(temp_json_file, logger=logger)
 
 
 def test_load_existing_data_empty_file(data_saver, temp_json_file):
@@ -38,7 +40,7 @@ def test_load_existing_data_existing_data(data_saver, temp_json_file):
     assert data[0]['title'] == "Existing Article"
 
 
-def test_extract_section_data():
+def test_extract_section_data(data_saver):
     """Test extracting section news_data from article content."""
     article_content = {
         "contentMain": {
@@ -47,8 +49,8 @@ def test_extract_section_data():
             ]
         }
     }
-    with patch('scrapers.news.news_data.data_saver.remove_html_tags', return_value="Test content"):
-        assert DataSaver.extract_section_data(article_content) == "Test content"
+    with patch("utils.remove_html_tags", return_value="Test content"):
+        assert data_saver.extract_section_data(article_content) == "Test content"
 
 
 def test_extract_tags():
