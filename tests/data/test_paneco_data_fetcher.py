@@ -1,6 +1,5 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from selenium.webdriver.common.by import By
 from scrapers.paneco.paneco_data.paneco_data_fetcher import PanecoDataFetcher
 
 
@@ -72,5 +71,4 @@ def test_extract_product_data(data_fetcher):
 
     assert result["Name"] == "Test Whiskey"
     assert result["internal_link"] == "https://example.com"
-
 
