@@ -81,7 +81,6 @@ class PanecoWhiskeyScraper(PanecoScraper):
                                                       driver.execute_script(
                                                           "return window.innerHeight + window.scrollY")
                                                       )
-
             self.logger.info(f"all elements with class: {class_name} have been successfully loaded.")
 
         except Exception as e:
